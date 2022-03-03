@@ -24,6 +24,12 @@ class Team < ApplicationRecord
   validates :name, length: { maximum: 40 }
   validates :description, length: { maximum: 300 }
 
+  enum recrypt_state = [
+    :FAILED,
+    :DONE,
+    :IN_PROGRESS
+  ]
+
   class << self
     def create(creator, params)
       team = super(params)
