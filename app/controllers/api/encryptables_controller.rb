@@ -78,6 +78,7 @@ class Api::EncryptablesController < ApiController
       # move handler calls encrypt implicit
       encryptable_move_handler.move
     else
+      encryptable.encryption_algorithm = team.encryption_algorithm
       encryptable.encrypt(decrypted_team_password(team))
     end
   end

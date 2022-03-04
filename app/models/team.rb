@@ -24,10 +24,18 @@ class Team < ApplicationRecord
   validates :name, length: { maximum: 40 }
   validates :description, length: { maximum: 300 }
 
-  enum recrypt_state = [
-    :FAILED,
-    :DONE,
-    :IN_PROGRESS
+  attr_accessor :encryption_algorithm
+
+  # Add further algorithms at the bottom
+  ENCRYPTION_ALGORITHMS = [
+    :AES256,
+    :AES256IV
+  ]
+
+  enum recrypt_state: [
+    :failed,
+    :done,
+    :in_progress
   ]
 
   class << self
@@ -43,6 +51,10 @@ class Team < ApplicationRecord
         end
       end
       team
+    end
+
+    def default_encryption
+      ENCRYPTION_ALGORITHMS.last
     end
   end
 
@@ -86,7 +98,19 @@ class Team < ApplicationRecord
     Crypto::RSA.decrypt(crypted_team_password, plaintext_private_key)
   end
 
+  def needs_recrypt?
+    self.done? && !uses_default_encryption?
+  end
+
+  def key_length(user_id)
+    teammember(user_id).password.bytesize
+  end
+
   private
+
+  def uses_default_encryption?
+   ENCRYPTION_ALGORITHMS.last == self.encryption_algorithm
+  end
 
   def create_teammember(user, plaintext_team_password)
     encrypted_team_password = Crypto::RSA.encrypt(plaintext_team_password, user.public_key)
