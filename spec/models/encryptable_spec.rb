@@ -67,6 +67,36 @@ describe Encryptable do
     expect(credential.errors.full_messages.first).to match(/Name/)
   end
 
+  it 'sets team encryption algorithm as encryption algorithm' do
+    params = {}
+    params[:name] = ''
+    params[:description] = 'foo foo'
+    params[:type] = 'Encryptable::Credentials'
+    params[:folder_id] = folders(:folder1).id
+    params[:encryption_algorithm] = 'DES'
+
+    credential = Encryptable::Credentials.new(params)
+
+    expect(credential.encryption_algorithm).to eq('AES256IV')
+  end
+
+  it 'sets previous team encryption algorithm as encryption algorithm' do
+    team = Team.create!(name: 'Puzzle Members')
+    folder = Folder.create!(name: 'Accounts', team: team)
+
+    params = {}
+    params[:name] = ''
+    params[:description] = 'foo foo'
+    params[:type] = 'Encryptable::Credentials'
+    params[:folder_id] = folder.id
+    params[:encryption_algorithm] = 'DES'
+
+    allow(folder).to receive_message_chain(:team, :encryption_algorithm).and_return('AES256')
+
+    credential = Encryptable::Credentials.new(params)
+    expect(credential.encryption_algorithm).to eq('AES256IV')
+  end
+
   context 'ose secret' do
     let!(:legacy_ose_secret) { create_legacy_ose_secret }
 

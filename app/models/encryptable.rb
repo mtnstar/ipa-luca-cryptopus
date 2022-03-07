@@ -20,7 +20,10 @@ class Encryptable < ApplicationRecord
   serialize :encrypted_data, ::EncryptedData
 
   attr_readonly :type
+  attr_readonly :encryption_algorithm
+
   validates :type, presence: true
+  validates :encryption_algorithm, presence: true
 
   belongs_to :folder
   has_many :file_entries, foreign_key: :account_id, primary_key: :id, dependent: :destroy
@@ -29,6 +32,8 @@ class Encryptable < ApplicationRecord
   validates :name, uniqueness: { scope: :folder }
   validates :name, length: { maximum: 70 }
   validates :description, length: { maximum: 4000 }
+
+  after_initialize :set_default_encryption_algorithm
 
   def encrypt(_team_password)
     raise 'implement in subclass'
@@ -72,6 +77,11 @@ class Encryptable < ApplicationRecord
                       end
 
     instance_variable_set("@cleartext_#{attr}", cleartext_value)
+  end
+
+  def set_default_encryption_algorithm
+    team_encryption_algorithm = folder.team.encryption_algorithm
+    self.encryption_algorithm = team_encryption_algorithm
   end
 
 end
