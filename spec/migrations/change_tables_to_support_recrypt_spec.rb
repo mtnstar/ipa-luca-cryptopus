@@ -45,8 +45,11 @@ describe ChangeTablesToSupportRecrypt do
       credentials1.reload
       expect(credentials1.encryption_algorithm).to eq('AES256')
 
-      new_credential = Encryptable::Credentials.create!(encryption_algorithm: team1.encryption_algorithm,
-                                                    name: 'Google Account')
+      new_credential = Encryptable::Credentials.create!(
+        encryption_algorithm: team1.encryption_algorithm,
+        name: 'Google Account'
+      )
+
       expect(new_credential.encryption_algorithm).to eq('AES256')
     end
   end
@@ -55,7 +58,7 @@ describe ChangeTablesToSupportRecrypt do
 
     it 'migrates back to previous state, without recrypt columns' do
       migration.down
-      require 'pry'; binding.pry unless $pstop
+
       team1.reload
       expect(team1.encryption_algorithm).to eq(nil)
       expect(team1.recrypt_state).to eq(nil)
@@ -67,7 +70,7 @@ describe ChangeTablesToSupportRecrypt do
 
       expect do
         Encryptable::Credentials.create!(encryption_algorithm: team1.encryption_algorithm,
-                                                          name: 'Google Account')
+                                         name: 'Google Account')
       end.to raise_error(ActiveRecord::StatementInvalid)
     end
   end

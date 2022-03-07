@@ -224,7 +224,7 @@ describe Team do
       name: 'foo',
       description: 'foo foo',
       private: true,
-      encryption_algorithm: "DES"
+      encryption_algorithm: 'DES'
     }
 
     team = Team.create(bob, params)

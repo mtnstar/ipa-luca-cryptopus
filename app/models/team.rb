@@ -33,7 +33,7 @@ class Team < ApplicationRecord
   ENCRYPTION_ALGORITHMS = [
     :AES256,
     :AES256IV
-  ]
+  ].freeze
 
   enum recrypt_state: [
     :failed,
@@ -102,7 +102,7 @@ class Team < ApplicationRecord
   end
 
   def needs_recrypt?
-    self.done? && !uses_default_encryption?
+    done? && !uses_default_encryption?
   end
 
   def password_size(user_id)
@@ -112,7 +112,7 @@ class Team < ApplicationRecord
   private
 
   def uses_default_encryption?
-   ENCRYPTION_ALGORITHMS.last == self.encryption_algorithm.to_sym
+    ENCRYPTION_ALGORITHMS.last == encryption_algorithm.to_sym
   end
 
   def create_teammember(user, plaintext_team_password)

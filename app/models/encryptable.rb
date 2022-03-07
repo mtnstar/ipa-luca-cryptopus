@@ -49,7 +49,7 @@ class Encryptable < ApplicationRecord
   private
 
   def encryption_algorithm_class
-    "Crypto::Symmetric::#{self.encryption_algorithm}".constantize
+    "Crypto::Symmetric::#{encryption_algorithm}".constantize
   end
 
   def encrypt_attr(attr, team_password)
