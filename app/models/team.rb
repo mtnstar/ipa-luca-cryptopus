@@ -101,6 +101,18 @@ class Team < ApplicationRecord
     Crypto::RSA.decrypt(crypted_team_password, plaintext_private_key)
   end
 
+  def reset_team_password()
+    new_team_password = Crypto::Symmetric::AES256.random_key
+
+    teammembers.each do |member|
+      puts member.user.username
+      public_key = member.user.public_key
+      encrypted_team_password = Crypto::RSA.encrypt(new_team_password, public_key)
+      member.password = encrypted_team_password
+      member.save!
+    end
+  end
+
   def needs_recrypt?
     done? && !uses_default_encryption?
   end
@@ -121,6 +133,6 @@ class Team < ApplicationRecord
   end
 
   def set_default_encryption_algorithm
-    self.encryption_algorithm = ENCRYPTION_ALGORITHMS.last
+    self.encryption_algorithm ||= ENCRYPTION_ALGORITHMS.last
   end
 end

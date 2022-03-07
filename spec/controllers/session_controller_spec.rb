@@ -112,5 +112,16 @@ describe SessionController do
 
       post :create, params: { password: 'password', username: 'bob' }
     end
+
+    it 'redirects to encryptables recrypt if user teams need recrypt' do
+      team1 = teams(:team1)
+
+
+
+    end
+
+    it 'skips recrypt if no user teams need recrypt' do
+
+    end
   end
 end

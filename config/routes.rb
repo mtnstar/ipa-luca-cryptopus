@@ -31,6 +31,8 @@ Rails.application.routes.draw do
       get 'oidc', to: 'oidc#new'
       post 'oidc', to: 'oidc#create'
     end
+
+    get 'encryptables', to: 'encryptables#new'
   end
 
 end

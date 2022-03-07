@@ -6,6 +6,8 @@
 #  https://github.com/puzzle/cryptopus.
 
 class SessionController < ApplicationController
+  include EncryptablesRecrypt
+
   # it's save to disable this for authenticate since there is no logged in session active
   # in this case.
   # caused problem with login form since the server side session is getting invalid after
@@ -17,6 +19,8 @@ class SessionController < ApplicationController
   before_action :authorize_action
   before_action :skip_authorization, only: [:create, :new, :destroy]
   before_action :assert_logged_in, only: :destroy
+
+  RECRYPT_DONE_STATE = 1.freeze
 
   layout 'session', only: :new
 
@@ -86,8 +90,16 @@ class SessionController < ApplicationController
   end
 
   def redirect_after_sucessful_login
-    jump_to = session.delete(:jumpto) || '/dashboard'
-    redirect_to jump_to
+    if user_teams_need_recrypt?
+      redirect_to recrypt_encryptables_path
+    else
+      jump_to = session.delete(:jumpto) || '/dashboard'
+      redirect_to jump_to
+    end
+  end
+
+  def user_teams_need_recrypt?
+    user_recrypt_teams.present?
   end
 
   def set_session_attributes(user, pk_secret)
