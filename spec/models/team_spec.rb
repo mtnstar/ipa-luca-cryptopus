@@ -159,4 +159,76 @@ describe Team do
     team = Team.create(bob, params)
     expect(team.valid?).to eq(false)
   end
+
+  it 'returns teampassword bytesize from user' do
+    params = {
+      name: 'foo',
+      description: 'foo foo',
+      private: true
+    }
+
+    team = Team.create(bob, params)
+
+    expect(team.password_size(bob)).to eq('256 bytes')
+  end
+
+  it 'needs recrypt if encryption algorithm not default' do
+    params = {
+      name: 'foo',
+      description: 'foo foo',
+      private: true
+    }
+
+    team = Team.create(bob, params)
+    team.encryption_algorithm = 'AES256'
+
+    expect(team.needs_recrypt?).to eq(true)
+  end
+
+  it 'does not need recrypt if encryption algorithm is default' do
+    params = {
+      name: 'foo',
+      description: 'foo foo',
+      private: true,
+      encryption_algorithm: Team.default_encryption_algorithm
+    }
+
+    team = Team.create(bob, params)
+    expect(team.needs_recrypt?).to eq(false)
+  end
+
+  it 'does not need recrypt if recrypt state in_progress or failed' do
+    params_team1 = {
+      name: 'foo',
+      description: 'foo foo',
+      private: true,
+      recrypt_state: 'in_progress'
+    }
+
+    params_team2 = {
+      name: 'foo',
+      description: 'foo foo',
+      private: true,
+      recrypt_state: 'failed'
+    }
+
+    team1 = Team.create(bob, params_team1)
+    team2 = Team.create(bob, params_team2)
+
+    expect(team1.needs_recrypt?).to eq(false)
+    expect(team2.needs_recrypt?).to eq(false)
+  end
+
+  it 'sets default encryption algorithm as default' do
+    params = {
+      name: 'foo',
+      description: 'foo foo',
+      private: true,
+      encryption_algorithm: "DES"
+    }
+
+    team = Team.create(bob, params)
+
+    expect(team.encryption_algorithm).to eq('AES256IV')
+  end
 end

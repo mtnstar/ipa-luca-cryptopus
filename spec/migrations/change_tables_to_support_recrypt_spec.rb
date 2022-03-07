@@ -15,10 +15,7 @@ describe ChangeTablesToSupportRecrypt do
 
   let!(:team1) { teams(:team1) }
 
-  let!(:folder1) { folders(:folder1) }
-
   let!(:credentials1) { encryptables(:credentials1) }
-  let!(:file1) { encryptables(:file1) }
 
   def silent
     verbose = ActiveRecord::Migration.verbose = false
@@ -35,68 +32,43 @@ describe ChangeTablesToSupportRecrypt do
   context 'up' do
 
     before do
-      rename_accounts_to_encryptables_migration.down
       migration.down
-
-      @team1 = Team.create!(name: 'Puzzle Members', description: 'Puzzle team')
-
-      @credentials3 = LegacyAccountCredentialsBefore.create!(accountname: 'spacex', username: '',
-                                                         password: nil)
-
-      @ose_secret1 = LegacyAccountCredentialsBefore.create!(accountname: 'spacex', username: '',
-                                                         password: nil)
     end
 
     it 'adds encryption columns to team and encryptable' do
       migration.up
 
-    end
+      team1.reload
+      expect(team1.encryption_algorithm).to eq('AES256')
+      expect(team1.recrypt_state).to eq('done')
 
+      credentials1.reload
+      expect(credentials1.encryption_algorithm).to eq('AES256')
+
+      new_credential = Encryptable::Credentials.create!(encryption_algorithm: team1.encryption_algorithm,
+                                                    name: 'Google Account')
+      expect(new_credential.encryption_algorithm).to eq('AES256')
+    end
   end
 
   context 'down' do
 
-    before do
-      rename_accounts_to_encryptables_migration.down
-    end
-
-    it 'migrates back to encrypted username, password blob fields' do
-      @account3 = LegacyAccountCredentialsAfter.create!(name: 'spacex', folder_id: folder1.id)
-
+    it 'migrates back to previous state, without recrypt columns' do
       migration.down
+      require 'pry'; binding.pry unless $pstop
+      team1.reload
+      expect(team1.encryption_algorithm).to eq(nil)
+      expect(team1.recrypt_state).to eq(nil)
 
-      # account 1
-      legacy_account = LegacyAccountCredentialsBefore.find(credentials1.id)
+      credentials1.reload
+      expect do
+        credentials1.encryption_algorithm
+      end.to raise_error(ActiveModel::MissingAttributeError)
 
-      raw_encrypted_data = legacy_account.read_attribute_before_type_cast(:encrypted_data)
-      expect(raw_encrypted_data).to eq('{}')
-
-      legacy_account.decrypt(team1_password)
-
-      expect(legacy_account.cleartext_username).to eq('test')
-      expect(legacy_account.cleartext_password).to eq('password')
-
-      # account 2
-      legacy_account = LegacyAccountCredentialsBefore.find(credentials2.id)
-
-      raw_encrypted_data = legacy_account.read_attribute_before_type_cast(:encrypted_data)
-      expect(raw_encrypted_data).to eq('{}')
-
-      legacy_account.decrypt(team2_password)
-
-      expect(legacy_account.cleartext_username).to eq('test2')
-      expect(legacy_account.cleartext_password).to eq('password')
-
-      # account 3
-      legacy_account = LegacyAccountCredentialsBefore.find_by(id: @account3.id)
-
-      raw_encrypted_data = legacy_account.read_attribute_before_type_cast(:encrypted_data)
-      expect(raw_encrypted_data).to eq('{}')
-
-      legacy_account.decrypt(team1_password)
-
-      expect(legacy_account.cleartext_username).to eq(nil)
-      expect(legacy_account.cleartext_password).to eq(nil)
+      expect do
+        Encryptable::Credentials.create!(encryption_algorithm: team1.encryption_algorithm,
+                                                          name: 'Google Account')
+      end.to raise_error(ActiveRecord::StatementInvalid)
     end
   end
 

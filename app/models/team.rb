@@ -15,16 +15,19 @@
 
 class Team < ApplicationRecord
   attr_readonly :private
+  attr_readonly :encryption_algorithm
+
   has_many :folders, -> { order :name }, dependent: :destroy
   has_many :teammembers, dependent: :delete_all
   has_many :members, through: :teammembers, source: :user
   has_many :user_favourite_teams, dependent: :destroy, foreign_key: :team_id
 
   validates :name, presence: true
+  validates :encryption_algorithm, presence: true
   validates :name, length: { maximum: 40 }
   validates :description, length: { maximum: 300 }
 
-  attr_accessor :encryption_algorithm
+  after_initialize :set_default_encryption_algorithm
 
   # Add further algorithms at the bottom
   ENCRYPTION_ALGORITHMS = [
@@ -53,7 +56,7 @@ class Team < ApplicationRecord
       team
     end
 
-    def default_encryption
+    def default_encryption_algorithm
       ENCRYPTION_ALGORITHMS.last
     end
   end
@@ -102,14 +105,14 @@ class Team < ApplicationRecord
     self.done? && !uses_default_encryption?
   end
 
-  def key_length(user_id)
-    teammember(user_id).password.bytesize
+  def password_size(user_id)
+    teammember(user_id).password.bytesize.to_s + ' bytes'
   end
 
   private
 
   def uses_default_encryption?
-   ENCRYPTION_ALGORITHMS.last == self.encryption_algorithm
+   ENCRYPTION_ALGORITHMS.last == self.encryption_algorithm.to_sym
   end
 
   def create_teammember(user, plaintext_team_password)
@@ -117,4 +120,7 @@ class Team < ApplicationRecord
     teammembers.create!(password: encrypted_team_password, user: user)
   end
 
+  def set_default_encryption_algorithm
+    self.encryption_algorithm = ENCRYPTION_ALGORITHMS.last
+  end
 end
