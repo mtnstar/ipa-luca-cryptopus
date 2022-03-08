@@ -231,4 +231,12 @@ describe Team do
 
     expect(team.encryption_algorithm).to eq('AES256IV')
   end
+
+  it 'resets team password for team' do
+    team = teams(:team1)
+
+    team_password = team.reset_team_password
+
+
+  end
 end

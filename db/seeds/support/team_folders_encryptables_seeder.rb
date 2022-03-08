@@ -70,15 +70,17 @@ class TeamFoldersEncryptablesSeeder
   end
 
   def seed_encryptable(folder, plaintext_team_pw)
-    username = Crypto::Symmetric::AES256.encrypt("#{Faker::Lorem.word} #{rand(999)}", plaintext_team_pw)
-    password = Crypto::Symmetric::AES256.encrypt(Faker::Internet.password, plaintext_team_pw)
+    username = "#{Faker::Lorem.word} #{rand(999)}"
+    password = Faker::Internet.password
 
     credential = folder.encryptables.new(name: "#{Faker::Company.name} #{rand(999)}",
                                   description: Faker::Lorem.paragraph,
                                       type: "Encryptable::Credentials")
 
-    credential.encrypted_data[:username] = { data: username, iv: nil }
-    credential.encrypted_data[:password] = { data: password, iv: nil }
+    credential.cleartext_username = username
+    credential.cleartext_password = password
+    credential.encrypt(plaintext_team_pw)
+
     credential.save!
   end
 

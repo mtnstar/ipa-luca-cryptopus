@@ -8,6 +8,10 @@ describe Encryptable do
   let(:bobs_private_key) { bob.decrypt_private_key('password') }
   let(:encryptable) { encryptables(:credentials1) }
   let(:team) { teams(:team1) }
+  let(:team_password) {
+    "K\xFDp\x80Q\v\x1AH\x84\x80\xFC\x8D\xBB\xCB\xA3" +
+    "\x8F\x8A\xFE\x92c\\\x93\x87\xA9\x129\xD4t\x11\xFD\xF7\x9E"
+  }
 
   it 'does not create second credential in same folder' do
     params = {}
@@ -56,6 +60,7 @@ describe Encryptable do
     params = {}
     params[:name] = ''
     params[:description] = 'foo foo'
+    params[:folder_id] = folders(:folder1).id
     params[:type] = 'Encryptable::Credentials'
 
     credential = Encryptable::Credentials.new(params)
@@ -77,7 +82,7 @@ describe Encryptable do
 
     credential = Encryptable::Credentials.new(params)
 
-    expect(credential.encryption_algorithm).to eq('AES256IV')
+    expect(credential.encryption_algorithm).to eq('AES256')
   end
 
   it 'sets previous team encryption algorithm as encryption algorithm' do
@@ -95,6 +100,57 @@ describe Encryptable do
 
     credential = Encryptable::Credentials.new(params)
     expect(credential.encryption_algorithm).to eq('AES256IV')
+  end
+
+  it 'uses aes256iv algorithm for encryption and decryption' do
+    params = {}
+    params[:name] = 'Cryptopus Account'
+    params[:description] = 'foo foo'
+    params[:type] = 'Encryptable::Credentials'
+    params[:folder_id] = folders(:folder1).id
+
+    allow_any_instance_of(Encryptable::Credentials).to receive(:encryption_algorithm).and_return('AES256IV')
+
+    credential = Encryptable::Credentials.new(params)
+    credential.cleartext_password = 'password'
+    credential.cleartext_username = 'alice'
+
+    credential.encrypt(team_password)
+
+    credential.save!
+
+    credential = Encryptable::Credentials.find(credential.id)
+    credential.decrypt(team_password)
+
+    expect(credential.encryption_algorithm).to eq('AES256IV')
+    expect(credential.cleartext_password).to eq('password')
+    expect(credential.cleartext_username).to eq('alice')
+  end
+
+  it 'uses aes256 algorithm for encryption and decryption' do
+    params = {}
+    params[:name] = 'Cryptopus Account'
+    params[:description] = 'foo foo'
+    params[:type] = 'Encryptable::Credentials'
+    params[:folder_id] = folders(:folder1).id
+
+    allow_any_instance_of(Encryptable::Credentials).to receive(:encryption_algorithm).and_return('AES256')
+
+    credential = Encryptable::Credentials.new(params)
+
+    credential.cleartext_password = 'password'
+    credential.cleartext_username = 'alice'
+
+    credential.encrypt(team_password)
+
+    credential.save!
+
+    credential = Encryptable::Credentials.find(credential.id)
+    credential.decrypt(team_password)
+
+    expect(credential.encryption_algorithm).to eq('AES256')
+    expect(credential.cleartext_password).to eq('password')
+    expect(credential.cleartext_username).to eq('alice')
   end
 
   context 'ose secret' do

@@ -15,7 +15,6 @@
 
 class Team < ApplicationRecord
   attr_readonly :private
-  attr_readonly :encryption_algorithm
 
   has_many :folders, -> { order :name }, dependent: :destroy
   has_many :teammembers, dependent: :delete_all
@@ -35,11 +34,11 @@ class Team < ApplicationRecord
     :AES256IV
   ].freeze
 
-  enum recrypt_state: [
-    :failed,
-    :done,
-    :in_progress
-  ]
+  enum recrypt_state: {
+    failed: 0,
+    done: 1,
+    in_progress: 2
+  }, _prefix: :recrypt
 
   class << self
     def create(creator, params)
@@ -101,27 +100,27 @@ class Team < ApplicationRecord
     Crypto::RSA.decrypt(crypted_team_password, plaintext_private_key)
   end
 
-  def reset_team_password()
-    new_team_password = Crypto::Symmetric::AES256.random_key
-
-    teammembers.each do |member|
-      puts member.user.username
-      public_key = member.user.public_key
-      encrypted_team_password = Crypto::RSA.encrypt(new_team_password, public_key)
-      member.password = encrypted_team_password
-      member.save!
-    end
-  end
-
   def needs_recrypt?
     done? && !uses_default_encryption?
   end
 
   def password_size(user_id)
-    teammember(user_id).password.bytesize.to_s + ' bytes'
+    teammember(user_id).password.bytesize.to_s
+  end
+
+  def encryption_algorithm_class
+    "Crypto::Symmetric::#{encryption_algorithm}".constantize
+  end
+
+  def update_encryption_algorithm
+    self.encryption_algorithm = ENCRYPTION_ALGORITHMS.last
   end
 
   private
+
+  def encryption_algortihm=(algortihm)
+    write_attribute(:encryption_algorithm, algortihm)
+  end
 
   def uses_default_encryption?
     ENCRYPTION_ALGORITHMS.last == encryption_algorithm.to_sym
@@ -133,6 +132,6 @@ class Team < ApplicationRecord
   end
 
   def set_default_encryption_algorithm
-    self.encryption_algorithm ||= ENCRYPTION_ALGORITHMS.last
+    self.encryption_algorithm = ENCRYPTION_ALGORITHMS.last if self.new_record?
   end
 end

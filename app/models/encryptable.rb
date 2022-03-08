@@ -15,12 +15,13 @@
 #  tag         :string
 #
 
+require_relative '../utils/crypto/symmetric/aes256iv'
+
 class Encryptable < ApplicationRecord
 
   serialize :encrypted_data, ::EncryptedData
 
   attr_readonly :type
-  attr_readonly :encryption_algorithm
 
   validates :type, presence: true
   validates :encryption_algorithm, presence: true
@@ -51,29 +52,40 @@ class Encryptable < ApplicationRecord
     name
   end
 
+  def update_encryption_algorithm
+    self.encryption_algorithm = Team.default_encryption_algorithm
+  end
+
   private
 
   def encryption_algorithm_class
-    "Crypto::Symmetric::#{encryption_algorithm}".constantize
+    ::Crypto::Symmetric.const_get(encryption_algorithm)
+  end
+
+  def encryption_algortihm=(algortihm)
+    write_attribute(:encryption_algorithm, algortihm)
   end
 
   def encrypt_attr(attr, team_password)
     cleartext_value = send(:"cleartext_#{attr}")
 
-    encrypted_value = if cleartext_value.blank?
-                        nil
-                      else
-                        encryption_algorithm_class.encrypt(cleartext_value, team_password)
-                      end
+    data, iv = if cleartext_value.blank?
+                 [nil, nil]
+               else
+                 encryption_algorithm_class.encrypt(cleartext_value, team_password)
+               end
 
-    encrypted_data[attr] = { data: encrypted_value, iv: nil }
+    encrypted_data[attr] = { data: data, iv: iv }
   end
 
   def decrypt_attr(attr, team_password)
     encrypted_value = encrypted_data[attr].try(:[], :data)
+    iv = encrypted_data[attr].try(:[], :iv) || nil
 
     cleartext_value = if encrypted_value
-                        encryption_algorithm_class.decrypt(encrypted_value, team_password)
+                        encryption_algorithm_class.decrypt(data: encrypted_value,
+                                                           key: team_password,
+                                                           iv: iv)
                       end
 
     instance_variable_set("@cleartext_#{attr}", cleartext_value)
@@ -83,5 +95,4 @@ class Encryptable < ApplicationRecord
     team_encryption_algorithm = folder.team.encryption_algorithm
     self.encryption_algorithm = team_encryption_algorithm
   end
-
 end

@@ -22,7 +22,7 @@ class Crypto::Symmetric::AES256IV < Crypto::Symmetric::AES256
       [encrypted_data, iv]
     end
 
-    def decrypt(data, key, iv)
+    def decrypt(data: nil, key: nil, iv: nil)
       cipher = cipher_decrypt_mode
 
       cipher.key = key
