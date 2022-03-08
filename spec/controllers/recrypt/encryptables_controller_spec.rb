@@ -13,7 +13,11 @@ describe Recrypt::EncryptablesController do
 
       get :new
 
+      team1.reload
+      encryptable1.reload
+
       expect(response).to have_http_status 302
+      expect(response).to redirect_to 'http://test.host/dashboard'
       expect(team1.encryption_algorithm).to eq('AES256IV')
       expect(team1.recrypt_state).to eq('done')
       expect(encryptable1.encryption_algorithm).to eq('AES256IV')
@@ -23,14 +27,61 @@ describe Recrypt::EncryptablesController do
       login_as(:alice)
       team1 = teams(:team1)
 
+      credential1 = Encryptable::Credentials.new(folder: team1.folders.first)
+      credential1.save(validate: false)
+
       allow_any_instance_of(Team).to receive(:encryption_algorithm).and_return('AES256')
 
       get :new
 
+      team1.reload
+
+      expect(response).to have_http_status 302
+      expect(team1.encryption_algorithm).to eq('AES256')
+      expect(team1.recrypt_state).to eq('failed')
+      expect(team1.encryption_algorithm).to eq('AES256')
+    end
+
+    it 'skips encryptables recrypt for user Teams if not needed' do
+      login_as(:alice)
+      team1 = teams(:team1)
+
+      credential1 = Encryptable::Credentials.new(folder: team1.folders.first)
+      credential1.save(validate: false)
+
+      allow_any_instance_of(Team).to receive(:encryption_algorithm).and_return('AES256IV')
+
+      get :new
+
+      team1.reload
+
       expect(response).to have_http_status 302
       expect(team1.encryption_algorithm).to eq('AES256IV')
-      expect(team1.recrypt_state).to eq('done')
-      expect(team1.recrypt_state).to eq('done')
+      expect(team1.recrypt_state).to eq('failed')
+      expect(team1.encryption_algorithm).to eq('AES256IV')
+    end
+
+    it 'resets team password within encryptables recrypt' do
+      login_as(:alice)
+      alice = users(:alice)
+      bob = users(:bob)
+      team1 = teams(:team1)
+      team_password = team1.decrypt_team_password(alice, alice.decrypt_private_key('password'))
+
+      get :new
+
+      team1.reload
+      new_team_password_alice = team1.decrypt_team_password(alice, alice.decrypt_private_key('password'))
+      new_team_password_bob = team1.decrypt_team_password(bob, bob.decrypt_private_key('password'))
+
+      expect(response).to have_http_status 302
+      expect(team_password).not_to eq(new_team_password_alice)
+      expect(team1.encryption_algorithm).to eq('AES256IV')
+
+      credentials = team1.folders.first.encryptables.first
+      credentials.decrypt(new_team_password_bob)
+      expect(credentials.cleartext_username).not_to eq('test')
+      expect(credentials.cleartext_password).to eq('password')
     end
   end
 
