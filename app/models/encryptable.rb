@@ -15,7 +15,8 @@
 #  tag         :string
 #
 
-require_relative '../utils/crypto/symmetric/aes256iv'
+require_dependency '../utils/crypto/symmetric/aes256'
+require_dependency '../utils/crypto/symmetric/aes256iv'
 
 class Encryptable < ApplicationRecord
 

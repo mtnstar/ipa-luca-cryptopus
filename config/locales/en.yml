@@ -458,7 +458,8 @@ en:
     delete_folder: Delete the Folder
     delete_account: Delete the Account
     configure: Configure Members
-
+    encryption_algorithm: "This Team uses "
+    key_size: " with a keysize of "
 
   #Pundit
   pundit:

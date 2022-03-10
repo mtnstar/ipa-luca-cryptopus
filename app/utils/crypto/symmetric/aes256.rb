@@ -68,8 +68,8 @@ class Crypto::Symmetric::AES256 < Crypto::Symmetric
       cipher_encrypt_mode.random_key
     end
 
-    def key_length
-      random_key.length
+    def key_bytesize
+      random_key.bytesize
     end
 
     private

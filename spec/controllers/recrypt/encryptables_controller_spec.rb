@@ -83,6 +83,42 @@ describe Recrypt::EncryptablesController do
       expect(credentials.cleartext_username).not_to eq('test')
       expect(credentials.cleartext_password).to eq('password')
     end
+
+    it 'recrypts ose secret encryptable' do
+      login_as(:alice)
+      alice = users(:alice)
+      team1 = teams(:team1)
+      team_password = team1.decrypt_team_password(alice, alice.decrypt_private_key('password'))
+      ose_secret = create_legacy_ose_secret
+
+      get :new
+
+      team1.reload
+      team_password = team1.decrypt_team_password(alice, alice.decrypt_private_key('password'))
+
+      expect(response).to have_http_status 302
+      require 'pry'; binding.pry unless $pstop
+      expect(team_password).not_to eq(new_team_password_alice)
+      expect(team1.encryption_algorithm).to eq('AES256IV')
+
+    end
+  end
+
+  private
+
+  def create_legacy_ose_secret
+    secret = Encryptable::OSESecret.new(name: 'ose_secret',
+                                        folder: folders(:folder1))
+
+    secret.save!
+    secret.write_attribute(:encrypted_data, legacy_ose_secret_data)
+    secret
+  end
+
+  def legacy_ose_secret_data
+    encoded_value = FixturesHelper.read_encryptable_file('example_secret_b64.secret')
+    value = Base64.strict_decode64(encoded_value)
+    { iv: 'Z2eRDQLhiIoCLgNxuunyKw==', value: value }.to_json
   end
 
 end

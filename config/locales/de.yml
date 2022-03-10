@@ -545,6 +545,8 @@ de:
     delete_folder: Ordner löschen
     delete_account: Account löschen
     configure: Konfiguriere Mitglieder
+    encryption_algorithm: "Dieses Team verwendet "
+    key_size: " mit einer Schlüsselgrösse von "
 
   #Pundit
   pundit:

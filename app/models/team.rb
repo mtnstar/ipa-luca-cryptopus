@@ -13,6 +13,9 @@
 #  private     :boolean          default(FALSE), not null
 #
 
+require_dependency '../utils/crypto/symmetric/aes256'
+require_dependency '../utils/crypto/symmetric/aes256iv'
+
 class Team < ApplicationRecord
   attr_readonly :private
 
@@ -100,16 +103,12 @@ class Team < ApplicationRecord
     Crypto::RSA.decrypt(crypted_team_password, plaintext_private_key)
   end
 
-  def needs_recrypt?
-    done? && !uses_default_encryption?
-  end
-
-  def password_size(user_id)
-    teammember(user_id).password.bytesize.to_s
+  def password_bytesize
+    encryption_algorithm_class.key_bytesize.to_s
   end
 
   def encryption_algorithm_class
-    "Crypto::Symmetric::#{encryption_algorithm}".constantize
+    ::Crypto::Symmetric.const_get(encryption_algorithm)
   end
 
   def update_encryption_algorithm

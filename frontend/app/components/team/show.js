@@ -19,6 +19,11 @@ export default class ShowComponent extends Component {
   @tracked
   isNewFolder = false;
 
+  encryptionAlgorithmLabels = {
+    AES256: "aes-256",
+    AES256IV: "aes-256-iv"
+  }
+
   @tracked
   collapsed =
     this.navService.selectedTeam != this.args.team &&
@@ -66,5 +71,10 @@ export default class ShowComponent extends Component {
           }
         }
       });
+  }
+
+  get encryptionAlgorithmLabelName() {
+    const encryptionAlgorithm = this.args.team.encryptionAlgorithm
+    return this.encryptionAlgorithmLabels[encryptionAlgorithm]
   }
 }
