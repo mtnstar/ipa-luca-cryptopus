@@ -22,7 +22,7 @@ export default class ShowComponent extends Component {
   encryptionAlgorithmLabels = {
     AES256: "aes-256",
     AES256IV: "aes-256-iv"
-  }
+  };
 
   @tracked
   collapsed =
@@ -74,7 +74,7 @@ export default class ShowComponent extends Component {
   }
 
   get encryptionAlgorithmLabelName() {
-    const encryptionAlgorithm = this.args.team.encryptionAlgorithm
-    return this.encryptionAlgorithmLabels[encryptionAlgorithm]
+    const encryptionAlgorithm = this.args.team.encryptionAlgorithm;
+    return this.encryptionAlgorithmLabels[encryptionAlgorithm];
   }
 }

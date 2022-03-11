@@ -109,6 +109,8 @@ describe RedirectedRoutes::UrlHandler do
 
   # /en/login/login -> /
   it 'redirects to to root path for old login path' do
+    allow(Team).to receive(:default_encryption_algorithm).and_return('AES256')
+
     get '/en/login/login'
 
     assert_redirected_to session_new_path

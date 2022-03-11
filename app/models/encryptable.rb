@@ -57,14 +57,14 @@ class Encryptable < ApplicationRecord
     self.encryption_algorithm = Team.default_encryption_algorithm
   end
 
-  private
-
   def encryption_algorithm_class
     ::Crypto::Symmetric.const_get(encryption_algorithm)
   end
 
+  private
+
   def encryption_algortihm=(algortihm)
-    write_attribute(:encryption_algorithm, algortihm)
+    self[:encryption_algorithm] = algortihm
   end
 
   def encrypt_attr(attr, team_password)

@@ -9,11 +9,13 @@ require 'spec_helper'
 describe 'User login' do
   include IntegrationHelpers::DefaultHelper
   it 'logs bob in' do
+    allow(Team).to receive(:default_encryption_algorithm).and_return('AES256')
     login_as('bob')
     expect(request.fullpath).to eq(root_path + 'dashboard')
   end
 
   it 'logs bob in with spaces in username' do
+    allow(Team).to receive(:default_encryption_algorithm).and_return('AES256')
     login_as('   bob   ')
     expect(request.fullpath).to eq(root_path + 'dashboard')
   end
@@ -47,6 +49,8 @@ describe 'User login' do
 
   it 'goes to requested page after login' do
     credentials1 = encryptables(:credentials1)
+    allow(Team).to receive(:default_encryption_algorithm).and_return('AES256')
+
     credentials1_path = "/encryptables/#{credentials1.id}"
     get credentials1_path
     follow_redirect!

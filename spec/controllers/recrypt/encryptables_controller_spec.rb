@@ -71,8 +71,10 @@ describe Recrypt::EncryptablesController do
       get :new
 
       team1.reload
-      new_team_password_alice = team1.decrypt_team_password(alice, alice.decrypt_private_key('password'))
-      new_team_password_bob = team1.decrypt_team_password(bob, bob.decrypt_private_key('password'))
+      new_team_password_alice = team1.decrypt_team_password(alice,
+                                                            alice.decrypt_private_key('password'))
+      new_team_password_bob = team1.decrypt_team_password(bob,
+                                                          bob.decrypt_private_key('password'))
 
       expect(response).to have_http_status 302
       expect(team_password).not_to eq(new_team_password_alice)
@@ -80,7 +82,7 @@ describe Recrypt::EncryptablesController do
 
       credentials = team1.folders.first.encryptables.first
       credentials.decrypt(new_team_password_bob)
-      expect(credentials.cleartext_username).not_to eq('test')
+      expect(credentials.cleartext_username).to eq('test')
       expect(credentials.cleartext_password).to eq('password')
     end
 
@@ -89,36 +91,37 @@ describe Recrypt::EncryptablesController do
       alice = users(:alice)
       team1 = teams(:team1)
       team_password = team1.decrypt_team_password(alice, alice.decrypt_private_key('password'))
-      ose_secret = create_legacy_ose_secret
+      ose_secret = create_ose_secret(team_password)
 
       get :new
 
       team1.reload
+      ose_secret.reload
       team_password = team1.decrypt_team_password(alice, alice.decrypt_private_key('password'))
 
       expect(response).to have_http_status 302
-      require 'pry'; binding.pry unless $pstop
-      expect(team_password).not_to eq(new_team_password_alice)
-      expect(team1.encryption_algorithm).to eq('AES256IV')
+      expect(response).to redirect_to 'http://test.host/dashboard'
 
+      ose_secret.decrypt(team_password)
+      expect(ose_secret.encryption_algorithm).to eq('AES256IV')
+      expect(ose_secret.cleartext_ose_secret).to eq(cleartext_ose_secret)
     end
   end
 
   private
 
-  def create_legacy_ose_secret
+  def create_ose_secret(team_password)
     secret = Encryptable::OSESecret.new(name: 'ose_secret',
                                         folder: folders(:folder1))
 
+    secret.cleartext_ose_secret = cleartext_ose_secret
+    secret.encrypt(team_password)
     secret.save!
-    secret.write_attribute(:encrypted_data, legacy_ose_secret_data)
     secret
   end
 
-  def legacy_ose_secret_data
-    encoded_value = FixturesHelper.read_encryptable_file('example_secret_b64.secret')
-    value = Base64.strict_decode64(encoded_value)
-    { iv: 'Z2eRDQLhiIoCLgNxuunyKw==', value: value }.to_json
+  def cleartext_ose_secret
+    Base64.strict_decode64(FixturesHelper.read_encryptable_file('example_secret.secret'))
   end
 
 end

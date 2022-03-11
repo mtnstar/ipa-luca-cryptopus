@@ -47,7 +47,8 @@ describe ChangeTablesToSupportRecrypt do
 
       new_credential = Encryptable::Credentials.create!(
         encryption_algorithm: team1.encryption_algorithm,
-        name: 'Google Account'
+        name: 'Google Account',
+        folder: folders(:folder1)
       )
 
       expect(new_credential.encryption_algorithm).to eq('AES256')
@@ -64,14 +65,13 @@ describe ChangeTablesToSupportRecrypt do
       expect(team1.recrypt_state).to eq(nil)
 
       credentials1.reload
-      expect do
-        credentials1.encryption_algorithm
-      end.to raise_error(ActiveModel::MissingAttributeError)
+
+      expect(credentials1.encryption_algorithm).to eq(nil)
 
       expect do
-        Encryptable::Credentials.create!(encryption_algorithm: team1.encryption_algorithm,
-                                         name: 'Google Account')
-      end.to raise_error(ActiveRecord::StatementInvalid)
+        Encryptable::Credentials.create!(name: 'Google Account',
+                                         folder: folders(:folder1))
+      end.to raise_error(ActiveRecord::RecordInvalid)
     end
   end
 

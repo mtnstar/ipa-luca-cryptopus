@@ -25,20 +25,22 @@ class Recrypt::EncryptablesController < ApplicationController
   end
 
   def recrypt(team, new_team_password)
-    begin
-      team_password = team.decrypt_team_password(current_user, session[:private_key])
-      ActiveRecord::Base.transaction do
-        entailed_encryptables(team).each do |encryptable|
-          recrypt_encryptable(encryptable, team_password, new_team_password)
-        end
-
-        update_team_encryption_algorithm(team)
-        reset_teammember_passwords(team, new_team_password)
-        team.recrypt_done!
+    team_password = team.decrypt_team_password(current_user, session[:private_key])
+    ActiveRecord::Base.transaction do
+      entailed_encryptables(team).each do |encryptable|
+        recrypt_encryptable(encryptable, team_password, new_team_password)
       end
-    rescue Exception
-      team.recrypt_failed!
+
+      recrypt_team(team, new_team_password)
     end
+  rescue StandardError
+    team.recrypt_failed!
+  end
+
+  def recrypt_team(team, new_team_password)
+    update_team_encryption_algorithm(team)
+    reset_teammember_passwords(team, new_team_password)
+    team.recrypt_done!
   end
 
   def reset_teammember_passwords(team, new_team_password)

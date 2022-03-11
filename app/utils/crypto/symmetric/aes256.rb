@@ -24,7 +24,7 @@ class Crypto::Symmetric::AES256 < Crypto::Symmetric
       [encrypted_value, nil]
     end
 
-    def decrypt(data: nil, key: nil, iv: nil)
+    def decrypt(data: nil, key: nil, iv: nil) # rubocop:disable Lint/UnusedMethodArgument
       cipher = cipher_decrypt_mode
 
       # set decryption key

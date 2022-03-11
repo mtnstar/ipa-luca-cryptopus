@@ -62,6 +62,9 @@ class FileEntry < ApplicationRecord
 
   private
 
+  def encryption_algorithm_class
+    encryptable.encryption_algorithm_class
+  end
 
   def valid_file_size
     return if cleartext_file.nil?
@@ -87,14 +90,14 @@ class FileEntry < ApplicationRecord
     crypted_file = send(attr)
     return if crypted_file.blank?
 
-    Crypto::Symmetric::AES256.decrypt(crypted_file, team_password)
+    encryption_algorithm_class.decrypt(data: crypted_file, key: team_password)
   end
 
   # rubocop:disable Rails/Blank
   def encrypt_file(team_password)
     return if cleartext_file.nil? || cleartext_file.empty?
 
-    self.file = Crypto::Symmetric::AES256.encrypt(cleartext_file, team_password)
+    self.file, = encryption_algorithm_class.encrypt(cleartext_file, team_password)
   end
   # rubocop:enable Rails/Blank
 end

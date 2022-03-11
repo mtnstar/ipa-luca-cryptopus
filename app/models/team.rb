@@ -118,7 +118,7 @@ class Team < ApplicationRecord
   private
 
   def encryption_algortihm=(algortihm)
-    write_attribute(:encryption_algorithm, algortihm)
+    self[:encryption_algorithm] = algortihm
   end
 
   def uses_default_encryption?
@@ -131,6 +131,6 @@ class Team < ApplicationRecord
   end
 
   def set_default_encryption_algorithm
-    self.encryption_algorithm = ENCRYPTION_ALGORITHMS.last if self.new_record?
+    self.encryption_algorithm = ENCRYPTION_ALGORITHMS.last if new_record?
   end
 end

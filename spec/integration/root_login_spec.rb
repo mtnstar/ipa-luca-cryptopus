@@ -13,8 +13,8 @@ describe 'Root login' do
   it 'lets root login via local ip' do
     post session_local_path, params: { username: 'root', password: 'password' }
     follow_redirect!
-    expect(request.fullpath).to eq(root_path + 'dashboard')
-    expect_ember_frontend
+    expect(request.fullpath).to eq(root_path + 'recrypt/encryptables')
+    expect_dashboard_redirect
   end
 
   it 'does not let root login via external ip' do
@@ -42,7 +42,7 @@ describe 'Root login' do
     post session_local_path, params: { username: 'root', password: 'password' }
 
     follow_redirect!
-    expect(request.fullpath).to eq(root_path + 'dashboard')
-    expect_ember_frontend
+    expect(request.fullpath).to eq(root_path + 'recrypt/encryptables')
+    expect_dashboard_redirect
   end
 end

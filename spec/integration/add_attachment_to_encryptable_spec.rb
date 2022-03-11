@@ -9,6 +9,8 @@ require 'spec_helper'
 describe 'Account attachement' do
   include IntegrationHelpers::DefaultHelper
   it 'adds and removes attachment to account1' do
+    allow(Team).to receive(:default_encryption_algorithm).and_return('AES256')
+
     credential = encryptables(:credentials1)
     login_as('bob')
     file = fixture_file_upload('test_file.txt', 'text/plain')

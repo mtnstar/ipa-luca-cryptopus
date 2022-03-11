@@ -169,7 +169,7 @@ describe Team do
 
     team = Team.create(bob, params)
 
-    expect(team.password_size(bob)).to eq('256 bytes')
+    expect(team.password_bytesize).to eq('32')
   end
 
   it 'sets default encryption algorithm as default' do

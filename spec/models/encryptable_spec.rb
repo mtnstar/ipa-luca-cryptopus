@@ -8,10 +8,10 @@ describe Encryptable do
   let(:bobs_private_key) { bob.decrypt_private_key('password') }
   let(:encryptable) { encryptables(:credentials1) }
   let(:team) { teams(:team1) }
-  let(:team_password) {
-    "K\xFDp\x80Q\v\x1AH\x84\x80\xFC\x8D\xBB\xCB\xA3" +
+  let(:team_password) do
+    "K\xFDp\x80Q\v\x1AH\x84\x80\xFC\x8D\xBB\xCB\xA3" \
     "\x8F\x8A\xFE\x92c\\\x93\x87\xA9\x129\xD4t\x11\xFD\xF7\x9E"
-  }
+  end
 
   it 'does not create second credential in same folder' do
     params = {}
@@ -109,7 +109,9 @@ describe Encryptable do
     params[:type] = 'Encryptable::Credentials'
     params[:folder_id] = folders(:folder1).id
 
-    allow_any_instance_of(Encryptable::Credentials).to receive(:encryption_algorithm).and_return('AES256IV')
+    allow_any_instance_of(Encryptable::Credentials)
+      .to receive(:encryption_algorithm)
+      .and_return('AES256IV')
 
     credential = Encryptable::Credentials.new(params)
     credential.cleartext_password = 'password'
@@ -134,7 +136,9 @@ describe Encryptable do
     params[:type] = 'Encryptable::Credentials'
     params[:folder_id] = folders(:folder1).id
 
-    allow_any_instance_of(Encryptable::Credentials).to receive(:encryption_algorithm).and_return('AES256')
+    allow_any_instance_of(Encryptable::Credentials)
+      .to receive(:encryption_algorithm)
+      .and_return('AES256')
 
     credential = Encryptable::Credentials.new(params)
 
