@@ -121,10 +121,6 @@ class Team < ApplicationRecord
     self[:encryption_algorithm] = algortihm
   end
 
-  def uses_default_encryption?
-    ENCRYPTION_ALGORITHMS.last == encryption_algorithm.to_sym
-  end
-
   def create_teammember(user, plaintext_team_password)
     encrypted_team_password = Crypto::RSA.encrypt(plaintext_team_password, user.public_key)
     teammembers.create!(password: encrypted_team_password, user: user)

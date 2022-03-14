@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ChangeTablesToSupportRecrypt < ActiveRecord::Migration[6.1]
   def up
     add_column :teams, :recrypt_state, :integer, default: 1, null: false

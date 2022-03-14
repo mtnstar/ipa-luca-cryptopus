@@ -20,8 +20,6 @@ class SessionController < ApplicationController
   before_action :skip_authorization, only: [:create, :new, :destroy]
   before_action :assert_logged_in, only: :destroy
 
-  RECRYPT_DONE_STATE = 1
-
   layout 'session', only: :new
 
   def create
