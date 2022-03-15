@@ -112,5 +112,25 @@ describe SessionController do
 
       post :create, params: { password: 'password', username: 'bob' }
     end
+
+    it 'redirects to encryptables recrypt if user teams need recrypt' do
+      user = users(:bob)
+      Team.create(user, name: 'Puzzle Members').save!
+
+      post :create, params: { password: 'password', username: 'bob' }
+
+      expect(response).to redirect_to recrypt_encryptables_path
+    end
+
+    it 'skips recrypt if no user teams need recrypt' do
+      user = users(:alice)
+      user.teams.first.remove_user(user).save
+
+      Team.create(user, name: 'Puzzle Members').save!
+
+      post :create, params: { password: 'password', username: 'alice' }
+
+      expect(response).to redirect_to 'http://test.host/dashboard'
+    end
   end
 end

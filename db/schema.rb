@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_01_13_085536) do
+ActiveRecord::Schema.define(version: 2022_03_04_091836) do
 
   create_table "encryptables", force: :cascade do |t|
     t.string "name", limit: 70, default: "", null: false
@@ -21,6 +21,7 @@ ActiveRecord::Schema.define(version: 2022_01_13_085536) do
     t.string "tag"
     t.string "type", default: "Account::Credentials", null: false
     t.text "encrypted_data", limit: 16777215
+    t.string "encryption_algorithm", default: "AES256", null: false
     t.index ["description"], name: "index_encryptables_on_description"
     t.index ["name"], name: "index_encryptables_on_name"
     t.index ["tag"], name: "index_encryptables_on_tag"
@@ -66,6 +67,8 @@ ActiveRecord::Schema.define(version: 2022_01_13_085536) do
     t.datetime "updated_at", null: false
     t.boolean "visible", default: true, null: false
     t.boolean "private", default: false, null: false
+    t.integer "recrypt_state", default: 1, null: false
+    t.string "encryption_algorithm", default: "AES256", null: false
     t.index ["name"], name: "index_teams_on_name"
   end
 

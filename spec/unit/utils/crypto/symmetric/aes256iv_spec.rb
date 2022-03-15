@@ -16,7 +16,9 @@ describe Crypto::Symmetric::AES256IV do
     encrypted_values = described_class.encrypt(data, key)
     encrypted_data, iv = encrypted_values
 
-    result = described_class.decrypt(encrypted_data, key, iv)
+    result = described_class.decrypt(data: encrypted_data,
+                                     key: key,
+                                     iv: iv)
     encoded_result = Base64.strict_encode64(result)
     expect(encoded_result).to eq('test')
   end

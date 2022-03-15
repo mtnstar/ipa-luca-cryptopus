@@ -23,8 +23,9 @@ describe Crypto::Symmetric::AES256 do
 
   it 'encrypts and decrypts data' do
     cleartext_data = Base64.decode64('test')
-    cleartext_data_encrypted = Crypto::Symmetric::AES256.encrypt(cleartext_data, team_password)
-    result = Crypto::Symmetric::AES256.decrypt(cleartext_data_encrypted, team_password)
+    cleartext_data_encrypted, = Crypto::Symmetric::AES256.encrypt(cleartext_data, team_password)
+    result = Crypto::Symmetric::AES256.decrypt(data: cleartext_data_encrypted,
+                                               key: team_password)
     expect(cleartext_data.force_encoding('UTF-8')).to eq(result)
   end
 end

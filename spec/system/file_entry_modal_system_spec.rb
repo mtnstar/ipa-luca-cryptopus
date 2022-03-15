@@ -16,6 +16,8 @@ describe 'FileEntryModal', type: :system, js: true do
   let(:plaintext_team_password) { teams(:team1).decrypt_team_password(bob, bobs_private_key) }
 
   it 'creates and deletes a file entry' do
+    allow(Team).to receive(:default_encryption_algorithm).and_return('AES256')
+
     login_as_user(:bob)
 
     team = teams(:team1)

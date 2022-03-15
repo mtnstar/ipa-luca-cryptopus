@@ -13,16 +13,35 @@
 #  private     :boolean          default(FALSE), not null
 #
 
+require_dependency '../utils/crypto/symmetric/aes256'
+require_dependency '../utils/crypto/symmetric/aes256iv'
+
 class Team < ApplicationRecord
   attr_readonly :private
+
   has_many :folders, -> { order :name }, dependent: :destroy
   has_many :teammembers, dependent: :delete_all
   has_many :members, through: :teammembers, source: :user
   has_many :user_favourite_teams, dependent: :destroy, foreign_key: :team_id
 
   validates :name, presence: true
+  validates :encryption_algorithm, presence: true
   validates :name, length: { maximum: 40 }
   validates :description, length: { maximum: 300 }
+
+  after_initialize :set_default_encryption_algorithm
+
+  # Add further algorithms at the bottom
+  ENCRYPTION_ALGORITHMS = [
+    :AES256,
+    :AES256IV
+  ].freeze
+
+  enum recrypt_state: {
+    failed: 0,
+    done: 1,
+    in_progress: 2
+  }, _prefix: :recrypt
 
   class << self
     def create(creator, params)
@@ -37,6 +56,10 @@ class Team < ApplicationRecord
         end
       end
       team
+    end
+
+    def default_encryption_algorithm
+      ENCRYPTION_ALGORITHMS.last
     end
   end
 
@@ -80,11 +103,30 @@ class Team < ApplicationRecord
     Crypto::RSA.decrypt(crypted_team_password, plaintext_private_key)
   end
 
+  def password_bytesize
+    encryption_algorithm_class.key_bytesize.to_s
+  end
+
+  def encryption_algorithm_class
+    ::Crypto::Symmetric.const_get(encryption_algorithm)
+  end
+
+  def update_encryption_algorithm
+    self.encryption_algorithm = ENCRYPTION_ALGORITHMS.last
+  end
+
   private
+
+  def encryption_algortihm=(algortihm)
+    self[:encryption_algorithm] = algortihm
+  end
 
   def create_teammember(user, plaintext_team_password)
     encrypted_team_password = Crypto::RSA.encrypt(plaintext_team_password, user.public_key)
     teammembers.create!(password: encrypted_team_password, user: user)
   end
 
+  def set_default_encryption_algorithm
+    self.encryption_algorithm = ENCRYPTION_ALGORITHMS.last if new_record?
+  end
 end

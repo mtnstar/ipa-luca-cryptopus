@@ -10,6 +10,7 @@ module("Integration | Component | team/show", function (hooks) {
     this.set("team", {
       name: "BBT",
       description: "Berufsbildungsteam of Puzzle ITC",
+      encryptionAlgorithm: "AES256",
       folders: [
         {
           name: "It-Ninjas",
@@ -25,5 +26,8 @@ module("Integration | Component | team/show", function (hooks) {
     assert.ok(text.includes("BBT"));
     assert.ok(text.includes("Berufsbildungsteam of Puzzle ITC"));
     assert.ok(text.includes("It-Ninjas"));
+
+    let image = this.element.querySelector("img.encryption-label");
+    assert.ok(image.getAttribute("src").includes("aes-256.svg"));
   });
 });

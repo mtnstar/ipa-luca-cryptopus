@@ -121,5 +121,10 @@ module IntegrationHelpers
     def expect_ember_frontend
       expect(response.body).to match('<div id="ember-basic-dropdown-wormhole"></div>')
     end
+
+    def expect_dashboard_redirect
+      expect(response.body).to match('You are being <a href=\"http://www.example.com/dashboard\">' \
+      'redirected</a>')
+    end
   end
 end

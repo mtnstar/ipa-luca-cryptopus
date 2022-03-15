@@ -45,6 +45,8 @@ describe UseEncryptedDataForAccountCredentials do
     end
 
     it 'migrates blob credentials to EncryptedData with base64 encoding' do
+      allow(Team).to receive(:default_encryption_algorithm).and_return('AES256')
+
       migration.up
 
       # account 1
@@ -105,6 +107,8 @@ describe UseEncryptedDataForAccountCredentials do
     end
 
     it 'migrates back to encrypted username, password blob fields' do
+      allow(Team).to receive(:default_encryption_algorithm).and_return('AES256')
+
       @account3 = LegacyAccountCredentialsAfter.create!(name: 'spacex', folder_id: folder1.id)
 
       migration.down
@@ -164,7 +168,7 @@ describe UseEncryptedDataForAccountCredentials do
       crypted_value = send(attr)
       return if crypted_value.blank?
 
-      Crypto::Symmetric::AES256.decrypt(crypted_value, team_password)
+      Crypto::Symmetric::AES256.decrypt(data: crypted_value, key: team_password)
     end
   end
 
@@ -205,7 +209,8 @@ describe UseEncryptedDataForAccountCredentials do
       encrypted_value = encrypted_data[attr].try(:[], :data)
 
       cleartext_value = if encrypted_value
-                          Crypto::Symmetric::AES256.decrypt(encrypted_value, team_password)
+                          Crypto::Symmetric::AES256.decrypt(data: encrypted_value,
+                                                            key: team_password)
                         end
 
       instance_variable_set("@cleartext_#{attr}", cleartext_value)

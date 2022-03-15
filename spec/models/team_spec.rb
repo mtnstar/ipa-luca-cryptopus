@@ -159,4 +159,29 @@ describe Team do
     team = Team.create(bob, params)
     expect(team.valid?).to eq(false)
   end
+
+  it 'returns teampassword bytesize from user' do
+    params = {
+      name: 'foo',
+      description: 'foo foo',
+      private: true
+    }
+
+    team = Team.create(bob, params)
+
+    expect(team.password_bytesize).to eq('32')
+  end
+
+  it 'sets default encryption algorithm as default' do
+    params = {
+      name: 'foo',
+      description: 'foo foo',
+      private: true,
+      encryption_algorithm: 'DES'
+    }
+
+    team = Team.create(bob, params)
+
+    expect(team.encryption_algorithm).to eq('AES256IV')
+  end
 end

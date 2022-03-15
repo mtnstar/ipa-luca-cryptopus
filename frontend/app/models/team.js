@@ -6,6 +6,8 @@ export default class Team extends Model {
   @attr("boolean") private;
   @attr("boolean") favourised;
   @attr("boolean") deletable;
+  @attr("string") encryptionAlgorithm;
+  @attr("number") passwordBytesize;
   @hasMany("folder") folders;
   @hasMany("teammember") teammembers;
 }

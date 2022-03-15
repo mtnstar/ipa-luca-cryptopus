@@ -86,7 +86,7 @@ describe 'User migrates to oidc' do
 
     # 7. user logged in
     follow_redirect!
-    expect(request.fullpath).to eq(root_path)
+    expect(request.fullpath).to eq(root_path + 'recrypt/encryptables')
 
     # user has now openid connect as auth
     expect(users(:bob).reload.auth).to eq('oidc')

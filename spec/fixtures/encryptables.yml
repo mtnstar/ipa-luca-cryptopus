@@ -23,6 +23,7 @@ credentials1:
   name: Personal Mailbox
   description: Mailprovider One
   folder: folder1
+  encryption_algorithm: AES256
   encrypted_data: '{"password":{"iv":null,"data":"pulO7xz5jDwUVQzbOqJzIw=="},"username":{"iv":null,"data":"0CkUu2Bd9eNB4OCuXVC3TA=="}}'
 
 credentials2:
@@ -31,4 +32,5 @@ credentials2:
   description: My personal twitter account
   folder: folder2
   tag: tag
+  encryption_algorithm: AES256
   encrypted_data: '{"password":{"iv":null,"data":"X2i8woXXwIHew6zcnBws9Q=="},"username":{"iv":null,"data":"Kvkd66uUiNq4Gw4Yh7PvVg=="}}'

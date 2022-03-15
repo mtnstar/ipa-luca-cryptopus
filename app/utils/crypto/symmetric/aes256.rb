@@ -17,11 +17,14 @@ class Crypto::Symmetric::AES256 < Crypto::Symmetric
       # set encryption key
       cipher.key = key
 
-      # return encrypted data
-      cipher.update(data) + cipher.final
+      # encrypt given data
+      encrypted_value = cipher.update(data) + cipher.final
+
+      # return data and nil iv value
+      [encrypted_value, nil]
     end
 
-    def decrypt(data, key)
+    def decrypt(data: nil, key: nil, iv: nil) # rubocop:disable Lint/UnusedMethodArgument
       cipher = cipher_decrypt_mode
 
       # set decryption key
@@ -63,6 +66,10 @@ class Crypto::Symmetric::AES256 < Crypto::Symmetric
 
     def random_key
       cipher_encrypt_mode.random_key
+    end
+
+    def key_bytesize
+      random_key.bytesize
     end
 
     private
